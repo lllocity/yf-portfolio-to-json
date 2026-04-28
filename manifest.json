@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "YF Portfolio to JSON",
+  "version": "0.1.0",
+  "description": "Yahoo Finance JP ポートフォリオから銘柄情報を抽出し JSON 出力する",
+  "content_scripts": [
+    {
+      "matches": ["https://finance.yahoo.co.jp/portfolio*"],
+      "js": ["dist/content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "128": "src/icons/icon128.png"
+  },
+  "action": {
+    "default_icon": {
+      "128": "src/icons/icon128.png"
+    }
+  },
+  "permissions": ["clipboardWrite"]
+}

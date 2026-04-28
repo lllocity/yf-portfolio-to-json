@@ -1,0 +1,13 @@
+{
+  "name": "yf-portfolio-to-json",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "lint": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.320",
+    "typescript": "^5.4.5"
+  }
+}
