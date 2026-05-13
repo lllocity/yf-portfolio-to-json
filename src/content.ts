@@ -3,7 +3,6 @@ interface Holding {
   market: string;
   name: string;
   currentPrice: number | null;
-  earningsDate: string | null;   // 決算発表日
   dividendYield: number | null;  // 配当利回り（%）
   profitLoss: number | null;     // 損益（円）
   profitLossRate: number | null; // 損益率（%）
@@ -18,7 +17,6 @@ interface Holding {
 const HEADER_MAP = {
   NAME_CODE:      'コード・市場・名称',
   CURRENT_PRICE:  '現在値',
-  EARNINGS_DATE:  '決算発表日',
   DIVIDEND_YIELD: '配当利回り',
   PROFIT_LOSS:    '損益',
   MARKET_CAP:     '時価総額',
@@ -149,7 +147,6 @@ function extractHoldings(): Holding[] {
       const { code, market, name } = parseNameCodeCell(nameCodeCell);
       if (!/^\d{4,5}$/.test(code)) continue;
 
-      const earningsRaw = getOptionalText(row, idx('EARNINGS_DATE'));
       const plRaw = row.cells[idx('PROFIT_LOSS') ?? -1]?.textContent ?? '';
       const { profitLoss, profitLossRate } = parseProfitLossCell(plRaw);
       const rawMarketCap = getOptionalNumber(row, idx('MARKET_CAP'));
@@ -159,7 +156,6 @@ function extractHoldings(): Holding[] {
         market,
         name,
         currentPrice:  getOptionalNumber(row, idx('CURRENT_PRICE')),
-        earningsDate:  earningsRaw?.replace(/\(連\)|\(単\)/g, '').trim() ?? null,
         dividendYield: getOptionalNumber(row, idx('DIVIDEND_YIELD')),
         profitLoss,
         profitLossRate,
