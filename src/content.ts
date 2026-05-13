@@ -9,8 +9,7 @@ interface Holding {
   marketCap: number | null;      // 時価総額（円）
   pbr: number | null;
   per: number | null;
-  marginBuy: number | null;
-  marginSell: number | null;
+  loanRatio: number | null;    // 貸借倍率
   memo: string | null;
 }
 
@@ -22,8 +21,7 @@ const HEADER_MAP = {
   MARKET_CAP:     '時価総額',
   PBR:            'PBR',
   PER:            'PER',
-  MARGIN_BUY:     '信用買残',
-  MARGIN_SELL:    '信用売残',
+  LOAN_RATIO:     '貸借倍率',
   MEMO:           'メモ',
 } as const;
 
@@ -162,8 +160,7 @@ function extractHoldings(): Holding[] {
         marketCap:     rawMarketCap !== null ? rawMarketCap * 1_000_000 : null,
         pbr:           getOptionalNumber(row, idx('PBR')),
         per:           getOptionalNumber(row, idx('PER')),
-        marginBuy:     getOptionalNumber(row, idx('MARGIN_BUY')),
-        marginSell:    getOptionalNumber(row, idx('MARGIN_SELL')),
+        loanRatio:     getOptionalNumber(row, idx('LOAN_RATIO')),
         memo:          getOptionalText(row, idx('MEMO')),
       });
     } catch (err) {
