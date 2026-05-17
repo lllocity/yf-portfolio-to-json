@@ -11,15 +11,14 @@
 | `code` | 銘柄コード | `"7012"` |
 | `market` | 市場区分 | `"東証PRM"` |
 | `name` | 銘柄名 | `"川崎重工業(株)"` |
-| `currentPrice` | 現在値 | `3134` |
-| `earningsDate` | 決算発表日 | `"2025年5月9日"` |
+| `currentPrice` | 現在値（円） | `3202` |
 | `dividendYield` | 配当利回り（%） | `1.06` |
 | `profitLoss` | 損益（円） | `-211` |
-| `marketCap` | 時価総額（百万円） | `2631335` |
+| `profitLossRate` | 損益率（%） | `-6.31` |
+| `marketCap` | 時価総額（円） | `2688428000000` |
 | `pbr` | PBR（倍） | `3.24` |
 | `per` | PER（倍） | `29.10` |
-| `marginBuy` | 信用買残（株） | `18599900` |
-| `marginSell` | 信用売残（株） | `1018000` |
+| `loanRatio` | 貸借倍率 | `1.23` |
 | `memo` | メモ | `"防衛関連"` |
 
 ## インストール方法
@@ -50,9 +49,8 @@ npm run build
 ## 使い方
 
 1. [ヤフーファイナンス ポートフォリオ](https://finance.yahoo.co.jp/portfolio/) を開く
-2. Chrome の **デベロッパーツール** を開く（`F12` または `⌘ + Option + I`）
-3. **Console** タブを選択
-4. `[yf-portfolio] 抽出結果:` というログに JSON が出力されている
+2. ページ右下に表示される **「JSONコピー」** ボタンをクリック
+3. クリップボードに JSON がコピーされる
 
 ```json
 [
@@ -60,15 +58,14 @@ npm run build
     "code": "7012",
     "market": "東証PRM",
     "name": "川崎重工業(株)",
-    "currentPrice": 3134,
-    "earningsDate": "2025年5月9日",
+    "currentPrice": 3202,
     "dividendYield": 1.06,
     "profitLoss": -211,
-    "marketCap": 2631335,
+    "profitLossRate": -6.31,
+    "marketCap": 2688428000000,
     "pbr": 3.24,
     "per": 29.10,
-    "marginBuy": 18599900,
-    "marginSell": 1018000,
+    "loanRatio": 1.23,
     "memo": null
   }
 ]
