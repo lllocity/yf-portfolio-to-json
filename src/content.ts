@@ -10,6 +10,8 @@ interface Holding {
   pbr: number | null;
   per: number | null;
   loanRatio: number | null;    // 貸借倍率
+  roe: number | null;          // ROE（%）
+  eps: number | null;          // EPS（円）
   memo: string | null;
 }
 
@@ -22,6 +24,8 @@ const HEADER_MAP = {
   PBR:            'PBR',
   PER:            'PER',
   LOAN_RATIO:     '貸借倍率',
+  ROE:            'ROE',
+  EPS:            'EPS',
   MEMO:           'メモ',
 } as const;
 
@@ -48,8 +52,9 @@ function buildColIndexMap(table: HTMLTableElement): Map<string, number> {
 
 function parseNumber(raw: string): number | null {
   const cleaned = raw
-    // セル内の更新時刻 (09:41) や日付 (4/17) は値の後ろに連結されるため先に除去
+    // セル内の更新時刻 (09:41)・日付 (4/17)・決算期 (2027/03) は値の後ろに連結されるため先に除去
     .replace(/\d{1,2}:\d{2}.*$/, '')
+    .replace(/\d{4}\/\d{2}.*$/, '')
     .replace(/\d{1,2}\/\d{1,2}.*$/, '')
     .replace(/\(連\)|\(単\)/g, '')
     .replace(/[倍円株%]/g, '')
@@ -161,6 +166,8 @@ function extractHoldings(): Holding[] {
         pbr:           getOptionalNumber(row, idx('PBR')),
         per:           getOptionalNumber(row, idx('PER')),
         loanRatio:     getOptionalNumber(row, idx('LOAN_RATIO')),
+        roe:           getOptionalNumber(row, idx('ROE')),
+        eps:           getOptionalNumber(row, idx('EPS')),
         memo:          getOptionalText(row, idx('MEMO')),
       });
     } catch (err) {
