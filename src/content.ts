@@ -9,6 +9,7 @@ interface Holding {
   marketCap: number | null;      // 時価総額（円）
   pbr: number | null;
   per: number | null;
+  equityRatio: number | null;  // 自己資本比率（%）
   loanRatio: number | null;    // 貸借倍率
   roe: number | null;          // ROE（%）
   eps: number | null;          // EPS（円）
@@ -23,6 +24,7 @@ const HEADER_MAP = {
   MARKET_CAP:     '時価総額',
   PBR:            'PBR',
   PER:            'PER',
+  EQUITY_RATIO:   '自己資本比率',
   LOAN_RATIO:     '貸借倍率',
   ROE:            'ROE',
   EPS:            'EPS',
@@ -165,6 +167,7 @@ function extractHoldings(): Holding[] {
         marketCap:     rawMarketCap !== null ? rawMarketCap * 1_000_000 : null,
         pbr:           getOptionalNumber(row, idx('PBR')),
         per:           getOptionalNumber(row, idx('PER')),
+        equityRatio:   getOptionalNumber(row, idx('EQUITY_RATIO')),
         loanRatio:     getOptionalNumber(row, idx('LOAN_RATIO')),
         roe:           getOptionalNumber(row, idx('ROE')),
         eps:           getOptionalNumber(row, idx('EPS')),

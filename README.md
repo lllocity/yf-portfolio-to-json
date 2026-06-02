@@ -18,6 +18,7 @@
 | `marketCap` | 時価総額（円） | `2688428000000` |
 | `pbr` | PBR（倍） | `3.24` |
 | `per` | PER（倍） | `29.10` |
+| `equityRatio` | 自己資本比率（%） | `41.4` |
 | `loanRatio` | 貸借倍率 | `1.23` |
 | `roe` | ROE（%） | `9.02` |
 | `eps` | EPS（円） | `150.17` |
@@ -67,6 +68,7 @@ npm run build
     "marketCap": 2688428000000,
     "pbr": 3.24,
     "per": 29.10,
+    "equityRatio": 41.4,
     "loanRatio": 1.23,
     "roe": 9.02,
     "eps": 150.17,
