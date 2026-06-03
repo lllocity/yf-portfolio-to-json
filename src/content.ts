@@ -106,7 +106,8 @@ function getOptionalNumber(row: HTMLTableRowElement, colIndex: number | undefine
 function parseNameCodeCell(cell: Element): Pick<Holding, 'code' | 'market' | 'name'> {
   const fullText = cell.textContent ?? '';
 
-  const codeMatch = fullText.match(/(\d{4,5})/);
+  // 4-5桁の純数字コード、または3桁数字＋英字1文字 (例: 464A) に対応
+  const codeMatch = fullText.match(/(\d{4,5}|\d{3}[A-Z])/);
   const code = codeMatch?.[1] ?? '';
 
   // 銘柄名は数字で始まらない <a> リンクから取得
@@ -150,7 +151,7 @@ function extractHoldings(): Holding[] {
       if (!nameCodeCell) continue;
 
       const { code, market, name } = parseNameCodeCell(nameCodeCell);
-      if (!/^\d{4,5}$/.test(code)) continue;
+      if (!/^(\d{4,5}|\d{3}[A-Z])$/.test(code)) continue;
 
       const plRaw = row.cells[idx('PROFIT_LOSS') ?? -1]?.textContent ?? '';
       const { profitLoss, profitLossRate } = parseProfitLossCell(plRaw);
