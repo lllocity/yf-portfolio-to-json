@@ -1,34 +1,42 @@
+interface NumberWithDate {
+  value: number | null;
+  date: string | null;
+}
+
 interface Holding {
   code: string;
   market: string;
   name: string;
-  currentPrice: number | null;
-  dividendYield: number | null;  // 配当利回り（%）
-  profitLoss: number | null;     // 損益（円）
-  profitLossRate: number | null; // 損益率（%）
-  marketCap: number | null;      // 時価総額（円）
-  pbr: number | null;
-  per: number | null;
-  equityRatio: number | null;  // 自己資本比率（%）
-  loanRatio: number | null;    // 貸借倍率
-  roe: number | null;          // ROE（%）
-  eps: number | null;          // EPS（円）
+  currentPrice: NumberWithDate;
+  dividendYield: NumberWithDate;
+  dividendPerShare: NumberWithDate;
+  marketCap: NumberWithDate;
+  pbr: NumberWithDate;
+  per: NumberWithDate;
+  eps: NumberWithDate;
+  roe: number | null;
+  equityRatio: number | null;
+  operatingProfit: NumberWithDate;
+  netIncome: NumberWithDate;
+  interestBearingDebt: NumberWithDate;
   memo: string | null;
 }
 
 const HEADER_MAP = {
-  NAME_CODE:      'コード・市場・名称',
-  CURRENT_PRICE:  '現在値',
-  DIVIDEND_YIELD: '配当利回り',
-  PROFIT_LOSS:    '損益',
-  MARKET_CAP:     '時価総額',
-  PBR:            'PBR',
-  PER:            'PER',
-  EQUITY_RATIO:   '自己資本比率',
-  LOAN_RATIO:     '貸借倍率',
-  ROE:            'ROE',
-  EPS:            'EPS',
-  MEMO:           'メモ',
+  NAME_CODE:             'コード・市場・名称',
+  CURRENT_PRICE:         '現在値',
+  DIVIDEND_YIELD:        '配当利回り',
+  DIVIDEND_PER_SHARE:    '1株配当',
+  MARKET_CAP:            '時価総額',
+  PBR:                   'PBR',
+  PER:                   'PER',
+  EQUITY_RATIO:          '自己資本比率',
+  ROE:                   'ROE',
+  EPS:                   'EPS',
+  OPERATING_PROFIT:      '営業利益',
+  NET_INCOME:            '当期利益',
+  INTEREST_BEARING_DEBT: '有利子負債',
+  MEMO:                  'メモ',
 } as const;
 
 function findPortfolioTable(): HTMLTableElement | null {
@@ -69,25 +77,47 @@ function parseNumber(raw: string): number | null {
   return isNaN(value) ? null : value;
 }
 
-function parseProfitLossCell(raw: string): { profitLoss: number | null; profitLossRate: number | null } {
+// 「(連) 186,081 百万円」「44,138百万円」のような金額表記を円換算する
+function parseLargeAmount(raw: string): number | null {
   const text = raw
     .replace(/\d{1,2}:\d{2}.*$/, '')
-    .replace(/\d{1,2}\/\d{1,2}.*$/, '');
+    .replace(/\d{4}\/\d{2}.*$/, '')
+    .replace(/\d{1,2}\/\d{1,2}.*$/, '')
+    .replace(/\(連\)|\(単\)/g, '')
+    .replace(/[,\s]/g, '')
+    .trim();
+  if (!text || text === '-' || text === '--' || text === '―') return null;
 
-  // 割合: "%" で終わる数値を抽出
-  const rateMatch = text.match(/([-+]?\d[\d,]*\.?\d*)%/);
-  const profitLossRate = rateMatch ? parseFloat(rateMatch[1]) : null;
+  const chouMatch = text.match(/([\d.]+)兆/);
+  if (chouMatch) return Math.round(parseFloat(chouMatch[1]) * 1e12);
 
-  // 金額: 割合部分より前のテキスト
-  const amountText = rateMatch ? text.slice(0, text.lastIndexOf(rateMatch[0])) : text;
-  const profitLoss = parseNumber(amountText);
+  const okuMatch = text.match(/([\d.]+)億/);
+  if (okuMatch) return Math.round(parseFloat(okuMatch[1]) * 1e8);
 
-  return { profitLoss, profitLossRate };
+  const hyakumanMatch = text.match(/([\d.]+)百万/);
+  if (hyakumanMatch) return Math.round(parseFloat(hyakumanMatch[1]) * 1e6);
+
+  const manMatch = text.match(/([\d.]+)万/);
+  if (manMatch) return Math.round(parseFloat(manMatch[1]) * 1e4);
+
+  const valMatch = text.match(/^([+-]?[\d.]+)円?$/);
+  if (!valMatch) return null;
+  const val = parseFloat(valMatch[1]);
+  return isNaN(val) ? null : val;
 }
+
 
 function getPrimaryText(cell: Element): string {
   const text = cell.textContent ?? '';
   return text.split('\n').map(s => s.trim()).find(s => s.length > 0) ?? '';
+}
+
+// セカンダリ行（更新日・決算期）の文字列を取得する
+function getCellDate(cell: Element): string | null {
+  const el = cell.querySelector('[class*="--secondary"]');
+  if (!el) return null;
+  const text = el.textContent?.trim() ?? '';
+  return text || null;
 }
 
 function getOptionalText(row: HTMLTableRowElement, colIndex: number | undefined): string | null {
@@ -101,6 +131,28 @@ function getOptionalText(row: HTMLTableRowElement, colIndex: number | undefined)
 function getOptionalNumber(row: HTMLTableRowElement, colIndex: number | undefined): number | null {
   const text = getOptionalText(row, colIndex);
   return text !== null ? parseNumber(text) : null;
+}
+
+function getOptionalNumberWithDate(row: HTMLTableRowElement, colIndex: number | undefined): NumberWithDate {
+  if (colIndex === undefined) return { value: null, date: null };
+  const cell = row.cells[colIndex];
+  if (!cell) return { value: null, date: null };
+  const text = getPrimaryText(cell);
+  return {
+    value: text.length > 0 ? parseNumber(text) : null,
+    date: getCellDate(cell),
+  };
+}
+
+function getOptionalLargeAmountWithDate(row: HTMLTableRowElement, colIndex: number | undefined): NumberWithDate {
+  if (colIndex === undefined) return { value: null, date: null };
+  const cell = row.cells[colIndex];
+  if (!cell) return { value: null, date: null };
+  const text = (cell.textContent ?? '').trim();
+  return {
+    value: text.length > 0 ? parseLargeAmount(text) : null,
+    date: getCellDate(cell),
+  };
 }
 
 function parseNameCodeCell(cell: Element): Pick<Holding, 'code' | 'market' | 'name'> {
@@ -153,26 +205,23 @@ function extractHoldings(): Holding[] {
       const { code, market, name } = parseNameCodeCell(nameCodeCell);
       if (!/^(\d{4,5}|\d{3}[A-Z])$/.test(code)) continue;
 
-      const plRaw = row.cells[idx('PROFIT_LOSS') ?? -1]?.textContent ?? '';
-      const { profitLoss, profitLossRate } = parseProfitLossCell(plRaw);
-      const rawMarketCap = getOptionalNumber(row, idx('MARKET_CAP'));
-
       holdings.push({
         code,
         market,
         name,
-        currentPrice:  getOptionalNumber(row, idx('CURRENT_PRICE')),
-        dividendYield: getOptionalNumber(row, idx('DIVIDEND_YIELD')),
-        profitLoss,
-        profitLossRate,
-        marketCap:     rawMarketCap !== null ? rawMarketCap * 1_000_000 : null,
-        pbr:           getOptionalNumber(row, idx('PBR')),
-        per:           getOptionalNumber(row, idx('PER')),
-        equityRatio:   getOptionalNumber(row, idx('EQUITY_RATIO')),
-        loanRatio:     getOptionalNumber(row, idx('LOAN_RATIO')),
-        roe:           getOptionalNumber(row, idx('ROE')),
-        eps:           getOptionalNumber(row, idx('EPS')),
-        memo:          getOptionalText(row, idx('MEMO')),
+        currentPrice:        getOptionalNumberWithDate(row, idx('CURRENT_PRICE')),
+        dividendYield:       getOptionalNumberWithDate(row, idx('DIVIDEND_YIELD')),
+        dividendPerShare:    getOptionalNumberWithDate(row, idx('DIVIDEND_PER_SHARE')),
+        marketCap:           getOptionalLargeAmountWithDate(row, idx('MARKET_CAP')),
+        pbr:                 getOptionalNumberWithDate(row, idx('PBR')),
+        per:                 getOptionalNumberWithDate(row, idx('PER')),
+        eps:                 getOptionalNumberWithDate(row, idx('EPS')),
+        roe:                 getOptionalNumber(row, idx('ROE')),
+        equityRatio:         getOptionalNumber(row, idx('EQUITY_RATIO')),
+        operatingProfit:     getOptionalLargeAmountWithDate(row, idx('OPERATING_PROFIT')),
+        netIncome:           getOptionalLargeAmountWithDate(row, idx('NET_INCOME')),
+        interestBearingDebt: getOptionalLargeAmountWithDate(row, idx('INTEREST_BEARING_DEBT')),
+        memo:                getOptionalText(row, idx('MEMO')),
       });
     } catch (err) {
       console.warn('[yf-portfolio] 行スキップ:', err);

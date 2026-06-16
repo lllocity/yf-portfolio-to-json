@@ -6,23 +6,28 @@
 
 ポートフォリオに表示している列に応じて、以下の情報を自動取得します（非表示の列は `null`）。
 
-| フィールド | 内容 | 例 |
-|---|---|---|
-| `code` | 銘柄コード | `"7012"` |
-| `market` | 市場区分 | `"東証PRM"` |
-| `name` | 銘柄名 | `"川崎重工業(株)"` |
-| `currentPrice` | 現在値（円） | `3202` |
-| `dividendYield` | 配当利回り（%） | `1.06` |
-| `profitLoss` | 損益（円） | `-211` |
-| `profitLossRate` | 損益率（%） | `-6.31` |
-| `marketCap` | 時価総額（円） | `2688428000000` |
-| `pbr` | PBR（倍） | `3.24` |
-| `per` | PER（倍） | `29.10` |
-| `equityRatio` | 自己資本比率（%） | `41.4` |
-| `loanRatio` | 貸借倍率 | `1.23` |
-| `roe` | ROE（%） | `9.02` |
-| `eps` | EPS（円） | `150.17` |
-| `memo` | メモ | `"防衛関連"` |
+数値フィールドの多くは `{ value, date }` 形式で返されます。`date` は更新日（`6/16` 形式）または決算期（`2027/03` 形式）を表し、実績値か予想値かの判別に使用できます。
+
+| フィールド | 内容 | 型 | 例 |
+|---|---|---|---|
+| `code` | 銘柄コード | `string` | `"4523"` |
+| `market` | 市場区分 | `string` | `"東証PRM"` |
+| `name` | 銘柄名 | `string` | `"エーザイ(株)"` |
+| `currentPrice` | 現在値（円） | `NumberWithDate` | `{ value: 3750, date: "6/16" }` |
+| `dividendYield` | 配当利回り（%） | `NumberWithDate` | `{ value: 4.27, date: "6/16" }` |
+| `dividendPerShare` | 1株配当（円） | `NumberWithDate` | `{ value: 160, date: "2027/03" }` |
+| `marketCap` | 時価総額（円） | `NumberWithDate` | `{ value: 1093684000000, date: "6/16" }` |
+| `pbr` | PBR（倍） | `NumberWithDate` | `{ value: 1.18, date: "6/16" }` |
+| `per` | PER（倍） | `NumberWithDate` | `{ value: 20.23, date: "6/16" }` |
+| `eps` | EPS（円） | `NumberWithDate` | `{ value: 185.39, date: "2027/03" }` |
+| `roe` | ROE（%） | `number \| null` | `4.43` |
+| `equityRatio` | 自己資本比率（%） | `number \| null` | `62.0` |
+| `operatingProfit` | 営業利益（円） | `NumberWithDate` | `{ value: 44138000000, date: "2026/03" }` |
+| `netIncome` | 当期利益（円） | `NumberWithDate` | `{ value: 38558000000, date: "2026/03" }` |
+| `interestBearingDebt` | 有利子負債（円） | `NumberWithDate` | `{ value: 186081000000, date: "2026/03" }` |
+| `memo` | メモ | `string \| null` | `"医薬品"` |
+
+`operatingProfit` / `netIncome` / `interestBearingDebt` / `marketCap` はポートフォリオテーブルの表示値（百万円・億円など）を円換算した整数で格納します。
 
 ## インストール方法
 
@@ -52,33 +57,35 @@ npm run build
 ## 使い方
 
 1. [ヤフーファイナンス ポートフォリオ](https://finance.yahoo.co.jp/portfolio/) を開く
-2. ページ右下に表示される **「JSONコピー」** ボタンをクリック
-3. クリップボードに JSON がコピーされる
+2. ポートフォリオの列設定で必要な列（1株配当・有利子負債・営業利益・当期利益 など）を表示しておく
+3. ページ右下に表示される **「JSONコピー」** ボタンをクリック
+4. クリップボードに JSON がコピーされる
 
 ```json
 [
   {
-    "code": "7012",
+    "code": "4523",
     "market": "東証PRM",
-    "name": "川崎重工業(株)",
-    "currentPrice": 3202,
-    "dividendYield": 1.06,
-    "profitLoss": -211,
-    "profitLossRate": -6.31,
-    "marketCap": 2688428000000,
-    "pbr": 3.24,
-    "per": 29.10,
-    "equityRatio": 41.4,
-    "loanRatio": 1.23,
-    "roe": 9.02,
-    "eps": 150.17,
+    "name": "エーザイ(株)",
+    "currentPrice": { "value": 3750, "date": "6/16" },
+    "dividendYield": { "value": 4.27, "date": "6/16" },
+    "dividendPerShare": { "value": 160, "date": "2027/03" },
+    "marketCap": { "value": 1093684000000, "date": "6/16" },
+    "pbr": { "value": 1.18, "date": "6/16" },
+    "per": { "value": 20.23, "date": "6/16" },
+    "eps": { "value": 185.39, "date": "2027/03" },
+    "roe": 4.43,
+    "equityRatio": 62.0,
+    "operatingProfit": { "value": 44138000000, "date": "2026/03" },
+    "netIncome": { "value": 38558000000, "date": "2026/03" },
+    "interestBearingDebt": { "value": 186081000000, "date": "2026/03" },
     "memo": null
   }
 ]
 ```
 
 > **ポートフォリオの列設定について**
-> 列の表示・非表示や順番はユーザー設定に依存します。表示していない列の値は `null` になります。
+> 列の表示・非表示や順番はユーザー設定に依存します。表示していない列の値は `null`（または `{ value: null, date: null }`）になります。
 
 ## 注意事項
 
