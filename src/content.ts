@@ -108,16 +108,25 @@ function parseLargeAmount(raw: string): number | null {
 
 
 function getPrimaryText(cell: Element): string {
+  // textContent を直接使うと "3,7506/16" のようにセカンダリ日付が連結されてしまうため
+  // --medium クラスを持つプライマリ要素のみを対象にする
+  const primary = cell.querySelector<HTMLElement>('[class*="--medium"]');
+  if (primary) return primary.textContent?.trim() ?? '';
   const text = cell.textContent ?? '';
   return text.split('\n').map(s => s.trim()).find(s => s.length > 0) ?? '';
 }
 
 // セカンダリ行（更新日・決算期）の文字列を取得する
+// M/D 形式の場合は実行時の年を補完して Y/M/D に統一する
 function getCellDate(cell: Element): string | null {
   const el = cell.querySelector('[class*="--secondary"]');
   if (!el) return null;
   const text = el.textContent?.trim() ?? '';
-  return text || null;
+  if (!text) return null;
+  if (/^\d{1,2}\/\d{1,2}$/.test(text)) {
+    return `${new Date().getFullYear()}/${text}`;
+  }
+  return text;
 }
 
 function getOptionalText(row: HTMLTableRowElement, colIndex: number | undefined): string | null {
