@@ -88,16 +88,16 @@ function parseLargeAmount(raw: string): number | null {
     .trim();
   if (!text || text === '-' || text === '--' || text === '―') return null;
 
-  const chouMatch = text.match(/([\d.]+)兆/);
+  const chouMatch = text.match(/(-?[\d.]+)兆/);
   if (chouMatch) return Math.round(parseFloat(chouMatch[1]) * 1e12);
 
-  const okuMatch = text.match(/([\d.]+)億/);
+  const okuMatch = text.match(/(-?[\d.]+)億/);
   if (okuMatch) return Math.round(parseFloat(okuMatch[1]) * 1e8);
 
-  const hyakumanMatch = text.match(/([\d.]+)百万/);
+  const hyakumanMatch = text.match(/(-?[\d.]+)百万/);
   if (hyakumanMatch) return Math.round(parseFloat(hyakumanMatch[1]) * 1e6);
 
-  const manMatch = text.match(/([\d.]+)万/);
+  const manMatch = text.match(/(-?[\d.]+)万/);
   if (manMatch) return Math.round(parseFloat(manMatch[1]) * 1e4);
 
   const valMatch = text.match(/^([+-]?[\d.]+)円?$/);
