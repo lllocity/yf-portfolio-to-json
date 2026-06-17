@@ -117,12 +117,16 @@ function getPrimaryText(cell: Element): string {
 }
 
 // セカンダリ行（更新日・決算期）の文字列を取得する
-// M/D 形式の場合は実行時の年を補完して Y/M/D に統一する
+// HH:MM（市場開場中）→ 当日日付 Y/M/D、M/D → 現在年を補完して Y/M/D に統一する
 function getCellDate(cell: Element): string | null {
   const el = cell.querySelector('[class*="--secondary"]');
   if (!el) return null;
   const text = el.textContent?.trim() ?? '';
-  if (!text) return null;
+  if (!text || /^[-―]+$/.test(text)) return null;
+  if (/^\d{1,2}:\d{2}$/.test(text)) {
+    const d = new Date();
+    return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
+  }
   if (/^\d{1,2}\/\d{1,2}$/.test(text)) {
     return `${new Date().getFullYear()}/${text}`;
   }
